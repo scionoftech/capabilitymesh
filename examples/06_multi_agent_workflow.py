@@ -7,6 +7,12 @@ This example demonstrates coordinating multiple agents:
 - Error handling and fallbacks
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import asyncio
 from typing import List, Dict
 from capabilitymesh import Mesh, Capability
@@ -23,44 +29,49 @@ async def main():
     print("\n1. Registering workflow agents...")
 
     # Step 1: Text extraction
-    @mesh.agent(name="pdf-extractor", capabilities=["text-extraction", "pdf"])
     def extract_text_from_pdf(pdf_path: str) -> str:
         """Extract text from PDF."""
         return f"Extracted text from {pdf_path}: This is a sample document about AI and machine learning."
 
+    await mesh.register(extract_text_from_pdf, name="pdf-extractor", capabilities=["text-extraction", "pdf"])
+
     # Step 2: Text preprocessing
-    @mesh.agent(name="text-preprocessor", capabilities=["preprocessing", "text"])
     def preprocess_text(text: str) -> str:
         """Clean and normalize text."""
         cleaned = text.strip().lower()
         return f"[Preprocessed] {cleaned}"
 
+    await mesh.register(preprocess_text, name="text-preprocessor", capabilities=["preprocessing", "text"])
+
     # Step 3: Entity extraction
-    @mesh.agent(name="entity-extractor", capabilities=["entity-extraction", "ner"])
     def extract_entities(text: str) -> List[str]:
         """Extract named entities."""
         return ["AI", "machine learning", "sample document"]
 
+    await mesh.register(extract_entities, name="entity-extractor", capabilities=["entity-extraction", "ner"])
+
     # Step 4: Sentiment analysis
-    @mesh.agent(name="sentiment-analyzer", capabilities=["sentiment-analysis"])
     def analyze_sentiment(text: str) -> str:
         """Analyze sentiment."""
         return "positive"
 
+    await mesh.register(analyze_sentiment, name="sentiment-analyzer", capabilities=["sentiment-analysis"])
+
     # Step 5: Summarization
-    @mesh.agent(name="summarizer", capabilities=["summarization"])
     def summarize_text(text: str) -> str:
         """Generate summary."""
         return "This document discusses AI and machine learning concepts."
 
+    await mesh.register(summarize_text, name="summarizer", capabilities=["summarization"])
+
     # Step 6: Translation
-    @mesh.agent(name="translator", capabilities=["translation"])
     def translate_text(text: str, target_lang: str = "es") -> str:
         """Translate text."""
         return f"[Translated to {target_lang}] {text}"
 
+    await mesh.register(translate_text, name="translator", capabilities=["translation"])
+
     # Step 7: Report generation
-    @mesh.agent(name="report-generator", capabilities=["report-generation"])
     def generate_report(data: Dict) -> str:
         """Generate final report."""
         return f"""
@@ -72,7 +83,9 @@ Summary: {data['summary']}
 Translation: {data['translation']}
 """
 
-    print("✓ Registered 7 workflow agents")
+    await mesh.register(generate_report, name="report-generator", capabilities=["report-generation"])
+
+    print("[OK] Registered 7 workflow agents")
 
     # Workflow 1: Sequential Pipeline
     print("\n2. Sequential workflow (pipeline)...")
@@ -84,17 +97,17 @@ Translation: {data['translation']}
         # Step 1: Extract text
         extractors = await mesh.discover("text extraction pdf")
         text = await mesh.execute(extractors[0].id, pdf_path)
-        print(f"  ✓ Extracted text")
+        print(f"  [OK] Extracted text")
 
         # Step 2: Preprocess
         preprocessors = await mesh.discover("preprocessing text")
         processed_text = await mesh.execute(preprocessors[0].id, text)
-        print(f"  ✓ Preprocessed text")
+        print(f"  [OK] Preprocessed text")
 
         # Step 3: Summarize
         summarizers = await mesh.discover("summarization")
         summary = await mesh.execute(summarizers[0].id, processed_text)
-        print(f"  ✓ Generated summary")
+        print(f"  [OK] Generated summary")
 
         return summary
 
@@ -111,57 +124,43 @@ Translation: {data['translation']}
         # Step 1: Extract text (sequential)
         extractors = await mesh.discover("text extraction")
         text = await mesh.execute(extractors[0].id, pdf_path)
-        print(f"  ✓ Extracted text")
+        print(f"  [OK] Extracted text")
 
         # Step 2: Parallel processing (fan-out)
         print(f"  → Fanning out to parallel tasks...")
 
-        # Run multiple analyses in parallel
-        entity_task = asyncio.create_task(
-            mesh.discover("entity extraction").then(
-                lambda agents: mesh.execute(agents[0].id, text) if agents else []
-            )
-        )
-
-        sentiment_task = asyncio.create_task(
-            mesh.discover("sentiment analysis").then(
-                lambda agents: mesh.execute(agents[0].id, text) if agents else "neutral"
-            )
-        )
-
-        summary_task = asyncio.create_task(
-            mesh.discover("summarization").then(
-                lambda agents: mesh.execute(agents[0].id, text) if agents else ""
-            )
-        )
-
-        translation_task = asyncio.create_task(
-            mesh.discover("translation").then(
-                lambda agents: mesh.execute(agents[0].id, text, target_lang="fr") if agents else ""
-            )
-        )
-
-        # Actually, let me rewrite this properly without .then()
+        # Discover all agents first
         entity_agents = await mesh.discover("entity extraction")
         sentiment_agents = await mesh.discover("sentiment analysis")
         summary_agents = await mesh.discover("summarization")
         translation_agents = await mesh.discover("translation")
 
-        entity_task = asyncio.create_task(
-            mesh.execute(entity_agents[0].id, text) if entity_agents else asyncio.sleep(0, result=[])
-        )
+        # Create helper functions for tasks
+        async def run_entity_extraction():
+            if entity_agents:
+                return await mesh.execute(entity_agents[0].id, text)
+            return []
 
-        sentiment_task = asyncio.create_task(
-            mesh.execute(sentiment_agents[0].id, text) if sentiment_agents else asyncio.sleep(0, result="neutral")
-        )
+        async def run_sentiment_analysis():
+            if sentiment_agents:
+                return await mesh.execute(sentiment_agents[0].id, text)
+            return "neutral"
 
-        summary_task = asyncio.create_task(
-            mesh.execute(summary_agents[0].id, text) if summary_agents else asyncio.sleep(0, result="")
-        )
+        async def run_summarization():
+            if summary_agents:
+                return await mesh.execute(summary_agents[0].id, text)
+            return ""
 
-        translation_task = asyncio.create_task(
-            mesh.execute(translation_agents[0].id, text, target_lang="fr") if translation_agents else asyncio.sleep(0, result="")
-        )
+        async def run_translation():
+            if translation_agents:
+                return await mesh.execute(translation_agents[0].id, text, target_lang="fr")
+            return ""
+
+        # Create tasks
+        entity_task = asyncio.create_task(run_entity_extraction())
+        sentiment_task = asyncio.create_task(run_sentiment_analysis())
+        summary_task = asyncio.create_task(run_summarization())
+        translation_task = asyncio.create_task(run_translation())
 
         # Wait for all tasks to complete (fan-in)
         entities, sentiment, summary, translation = await asyncio.gather(
@@ -171,7 +170,7 @@ Translation: {data['translation']}
             translation_task,
         )
 
-        print(f"  ✓ Completed parallel tasks")
+        print(f"  [OK] Completed parallel tasks")
 
         # Step 3: Combine results
         result = {
@@ -184,7 +183,7 @@ Translation: {data['translation']}
         # Step 4: Generate report
         report_agents = await mesh.discover("report generation")
         report = await mesh.execute(report_agents[0].id, result)
-        print(f"  ✓ Generated final report")
+        print(f"  [OK] Generated final report")
 
         return report
 
@@ -204,12 +203,12 @@ Translation: {data['translation']}
             translators = await mesh.discover("translation")
             if translators:
                 text = await mesh.execute(translators[0].id, text, target_lang="en")
-                print(f"  ✓ Translated to English")
+                print(f"  [OK] Translated to English")
 
         # Analyze sentiment
         sentiment_agents = await mesh.discover("sentiment")
         sentiment = await mesh.execute(sentiment_agents[0].id, text)
-        print(f"  ✓ Sentiment: {sentiment}")
+        print(f"  [OK] Sentiment: {sentiment}")
 
         # Route based on sentiment
         if sentiment == "negative":
@@ -227,7 +226,6 @@ Translation: {data['translation']}
     print("\n5. Error handling and fallbacks...")
 
     # Register a unreliable agent
-    @mesh.agent(name="unreliable-service", capabilities=["unreliable"])
     def unreliable_operation(input_data: str) -> str:
         """Sometimes fails."""
         import random
@@ -235,11 +233,14 @@ Translation: {data['translation']}
             raise ValueError("Service temporarily unavailable")
         return f"Success: {input_data}"
 
+    await mesh.register(unreliable_operation, name="unreliable-service", capabilities=["unreliable"])
+
     # Register a fallback agent
-    @mesh.agent(name="fallback-service", capabilities=["fallback"])
     def fallback_operation(input_data: str) -> str:
         """Always succeeds."""
         return f"Fallback processed: {input_data}"
+
+    await mesh.register(fallback_operation, name="fallback-service", capabilities=["fallback"])
 
     async def workflow_with_fallback(input_data: str) -> str:
         """Try primary service, fallback on error."""
@@ -249,7 +250,7 @@ Translation: {data['translation']}
         try:
             primary_agents = await mesh.discover("unreliable")
             result = await mesh.execute(primary_agents[0].id, input_data)
-            print(f"  ✓ Primary service succeeded")
+            print(f"  [OK] Primary service succeeded")
             return result
         except Exception as e:
             print(f"  ⚠ Primary service failed: {e}")
@@ -258,7 +259,7 @@ Translation: {data['translation']}
             # Fallback to backup service
             fallback_agents = await mesh.discover("fallback")
             result = await mesh.execute(fallback_agents[0].id, input_data)
-            print(f"  ✓ Fallback service succeeded")
+            print(f"  [OK] Fallback service succeeded")
             return result
 
     # Try the workflow a few times
@@ -286,7 +287,7 @@ Translation: {data['translation']}
         # - Availability
 
         selected = agents[0]
-        print(f"  ✓ Selected: {selected.name}")
+        print(f"  [OK] Selected: {selected.name}")
 
         # Execute
         result = await mesh.execute(selected.id, "test input")

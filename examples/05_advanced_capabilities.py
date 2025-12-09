@@ -7,6 +7,12 @@ This example demonstrates advanced capability features:
 - Semantic metadata (tags, categories, domains)
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import asyncio
 from capabilitymesh import (
     Mesh,
@@ -17,6 +23,7 @@ from capabilitymesh import (
     CapabilityConstraints,
     SemanticMetadata,
     IOFormat,
+    AgentType,
 )
 
 
@@ -31,10 +38,9 @@ async def main():
     print("\n1. Structured capability with I/O schema...")
 
     input_spec = CapabilityInputOutput(
-        name="text_input",
+        format=IOFormat.JSON,
         description="Text to analyze",
-        format=IOFormat.TEXT,
-        schema={
+        json_schema={
             "type": "object",
             "properties": {
                 "text": {"type": "string", "minLength": 1},
@@ -45,10 +51,9 @@ async def main():
     )
 
     output_spec = CapabilityInputOutput(
-        name="analysis_result",
-        description="Sentiment analysis result",
         format=IOFormat.JSON,
-        schema={
+        description="Sentiment analysis result",
+        json_schema={
             "type": "object",
             "properties": {
                 "sentiment": {"type": "string", "enum": ["positive", "negative", "neutral"]},
@@ -59,12 +64,27 @@ async def main():
         },
     )
 
+    import uuid
+    from datetime import datetime
+    from capabilitymesh.schemas.capability import StructuredCapability
+
     structured_cap = Capability(
+        id=str(uuid.uuid4()),
         name="sentiment-analysis-v2",
         description="Advanced sentiment analysis with emotion detection",
         capability_type=CapabilityType.STRUCTURED,
+        agent_type=AgentType.SOFTWARE,
         version=CapabilityVersion.from_string("2.1.0"),
-        structured={"input": input_spec, "output": output_spec},
+        inputs=[input_spec],
+        outputs=[output_spec],
+        structured_spec=StructuredCapability(
+            endpoint="local",
+            method="CALL",
+            input_schema=input_spec.json_schema or {},
+            output_schema=output_spec.json_schema or {},
+        ),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     def analyze_sentiment_v2(data: dict) -> dict:
@@ -82,7 +102,7 @@ async def main():
         capabilities=[structured_cap],
     )
 
-    print("✓ Registered structured capability")
+    print("[OK] Registered structured capability")
     print(f"  Input format: {input_spec.format}")
     print(f"  Output format: {output_spec.format}")
     print(f"  Input schema: {input_spec.schema}")
@@ -111,7 +131,7 @@ async def main():
             capabilities=[cap],
         )
 
-    print(f"✓ Registered {len(versions)} API versions")
+    print(f"[OK] Registered {len(versions)} API versions")
 
     # Check version compatibility
     print("\n  Version compatibility checks:")
@@ -129,32 +149,50 @@ async def main():
 
     # High-performance, low-latency service
     fast_constraints = CapabilityConstraints(
-        max_response_time_ms=100,
-        max_cost_per_call=0.001,
-        min_availability=0.999,
-        rate_limit_per_minute=1000,
+        max_concurrent=1000,
+        rate_limit={"requests_per_minute": 1000},
+        timeout_seconds=1,
+        cost={"currency": "USD", "per_request": 0.001},
     )
 
+    from capabilitymesh.schemas.capability import UnstructuredCapability
+
     fast_cap = Capability(
+        id=str(uuid.uuid4()),
         name="fast-translation",
         description="Ultra-fast translation with 99.9% uptime",
         capability_type=CapabilityType.UNSTRUCTURED,
+        agent_type=AgentType.SOFTWARE,
+        version=CapabilityVersion(major=1, minor=0, patch=0),
+        inputs=[CapabilityInputOutput(format=IOFormat.TEXT, description="Input text")],
+        outputs=[CapabilityInputOutput(format=IOFormat.TEXT, description="Translated text")],
+        unstructured_spec=UnstructuredCapability(),
         constraints=fast_constraints,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     # Budget service with higher latency
     budget_constraints = CapabilityConstraints(
-        max_response_time_ms=5000,
-        max_cost_per_call=0.0001,
-        min_availability=0.95,
-        rate_limit_per_minute=100,
+        max_concurrent=100,
+        rate_limit={"requests_per_minute": 100},
+        timeout_seconds=5,
+        cost={"currency": "USD", "per_request": 0.0001},
     )
 
     budget_cap = Capability(
+        id=str(uuid.uuid4()),
         name="budget-translation",
         description="Cost-effective translation service",
         capability_type=CapabilityType.UNSTRUCTURED,
+        agent_type=AgentType.SOFTWARE,
+        version=CapabilityVersion(major=1, minor=0, patch=0),
+        inputs=[CapabilityInputOutput(format=IOFormat.TEXT, description="Input text")],
+        outputs=[CapabilityInputOutput(format=IOFormat.TEXT, description="Translated text")],
+        unstructured_spec=UnstructuredCapability(),
         constraints=budget_constraints,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     def fast_translate(text: str) -> str:
@@ -175,33 +213,39 @@ async def main():
         capabilities=[budget_cap],
     )
 
-    print("✓ Registered services with constraints")
+    print("[OK] Registered services with constraints")
     print(f"\n  Fast Service:")
-    print(f"    Max latency: {fast_constraints.max_response_time_ms}ms")
-    print(f"    Max cost: ${fast_constraints.max_cost_per_call}")
-    print(f"    Availability: {fast_constraints.min_availability * 100}%")
-    print(f"    Rate limit: {fast_constraints.rate_limit_per_minute}/min")
+    print(f"    Timeout: {fast_constraints.timeout_seconds}s")
+    print(f"    Max cost: ${fast_constraints.cost.get('per_request')}")
+    print(f"    Max concurrent: {fast_constraints.max_concurrent}")
+    print(f"    Rate limit: {fast_constraints.rate_limit.get('requests_per_minute')}/min")
     print(f"\n  Budget Service:")
-    print(f"    Max latency: {budget_constraints.max_response_time_ms}ms")
-    print(f"    Max cost: ${budget_constraints.max_cost_per_call}")
-    print(f"    Availability: {budget_constraints.min_availability * 100}%")
-    print(f"    Rate limit: {budget_constraints.rate_limit_per_minute}/min")
+    print(f"    Timeout: {budget_constraints.timeout_seconds}s")
+    print(f"    Max cost: ${budget_constraints.cost.get('per_request')}")
+    print(f"    Max concurrent: {budget_constraints.max_concurrent}")
+    print(f"    Rate limit: {budget_constraints.rate_limit.get('requests_per_minute')}/min")
 
     # 4. Semantic Metadata
     print("\n4. Semantic metadata (tags, categories, domains)...")
 
     semantic_metadata = SemanticMetadata(
-        tags=["nlp", "text-processing", "ai", "machine-learning"],
-        categories=["Natural Language Processing", "Text Analysis"],
-        domains=["healthcare", "finance", "legal"],
-        keywords=["medical", "clinical", "diagnosis", "patient"],
+        tags=["nlp", "text-processing", "ai", "machine-learning", "healthcare", "medical"],
+        categories=["Natural Language Processing", "Text Analysis", "Healthcare"],
     )
 
     medical_cap = Capability(
+        id=str(uuid.uuid4()),
         name="medical-text-analysis",
         description="Analyze medical and clinical text documents",
         capability_type=CapabilityType.UNSTRUCTURED,
+        agent_type=AgentType.SOFTWARE,
+        version=CapabilityVersion(major=1, minor=0, patch=0),
+        inputs=[CapabilityInputOutput(format=IOFormat.TEXT, description="Medical text input")],
+        outputs=[CapabilityInputOutput(format=IOFormat.JSON, description="Analysis results")],
+        unstructured_spec=UnstructuredCapability(),
         semantic=semantic_metadata,
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     def analyze_medical_text(text: str) -> dict:
@@ -216,16 +260,14 @@ async def main():
         capabilities=[medical_cap],
     )
 
-    print("✓ Registered capability with rich metadata")
+    print("[OK] Registered capability with rich metadata")
     print(f"  Tags: {', '.join(semantic_metadata.tags)}")
     print(f"  Categories: {', '.join(semantic_metadata.categories)}")
-    print(f"  Domains: {', '.join(semantic_metadata.domains)}")
-    print(f"  Keywords: {', '.join(semantic_metadata.keywords)}")
 
     # 5. Capability Summary
     print("\n5. Capability summaries...")
 
-    agents = await mesh.list()
+    agents = await mesh.list_agents()
     print(f"\n  Found {len(agents)} agents with capabilities:")
 
     for agent in agents[:5]:  # Show first 5
@@ -255,33 +297,43 @@ async def main():
         capabilities=[old_cap],
     )
 
-    print("✓ Registered deprecated capability")
-    print(f"  Deprecated: {old_cap.is_deprecated}")
+    print("[OK] Registered deprecated capability")
+    print(f"  Deprecated: {old_cap.is_deprecated()}")
     print(f"  Notice: {old_cap.deprecation_notice}")
 
     # 7. Hybrid Capabilities
     print("\n7. Hybrid capabilities (structured + unstructured)...")
 
     hybrid_input = CapabilityInputOutput(
-        name="flexible_input",
-        description="Accepts both JSON and plain text",
         format=IOFormat.JSON,
-        schema={"type": "object"},
+        description="Accepts both JSON and plain text",
+        json_schema={"type": "object"},
     )
 
     hybrid_output = CapabilityInputOutput(
-        name="flexible_output",
-        description="Returns structured data or plain text",
         format=IOFormat.JSON,
-        schema={"type": "object"},
+        description="Returns structured data or plain text",
+        json_schema={"type": "object"},
     )
 
     hybrid_cap = Capability(
+        id=str(uuid.uuid4()),
         name="hybrid-processor",
         description="Flexible processor that handles multiple formats",
         capability_type=CapabilityType.HYBRID,
-        structured={"input": hybrid_input, "output": hybrid_output},
-        unstructured={"input_description": "Any text or JSON", "output_description": "Processed result"},
+        agent_type=AgentType.SOFTWARE,
+        version=CapabilityVersion(major=1, minor=0, patch=0),
+        inputs=[hybrid_input],
+        outputs=[hybrid_output],
+        structured_spec=StructuredCapability(
+            endpoint="local",
+            method="CALL",
+            input_schema=hybrid_input.json_schema or {},
+            output_schema=hybrid_output.json_schema or {},
+        ),
+        unstructured_spec=UnstructuredCapability(),
+        created_at=datetime.utcnow(),
+        updated_at=datetime.utcnow(),
     )
 
     def hybrid_process(input_data) -> dict:
@@ -295,7 +347,7 @@ async def main():
         capabilities=[hybrid_cap],
     )
 
-    print("✓ Registered hybrid capability")
+    print("[OK] Registered hybrid capability")
     print(f"  Type: {hybrid_cap.capability_type}")
     print(f"  Supports: Both structured (JSON) and unstructured (text) inputs")
 

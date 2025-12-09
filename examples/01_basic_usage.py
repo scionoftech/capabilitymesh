@@ -46,23 +46,20 @@ async def main():
     )
     print("[OK] Registered: text-summarizer")
 
-    # Method 2: Register with decorator
-    @mesh.agent(
-        name="translator",
-        capabilities=["translation", "nlp", "language"],
-    )
+    # Method 2: Register a regular function explicitly
     def translate_text(text: str, target_lang: str = "es") -> str:
         """Translate text to target language."""
         # Simple mock translation
         return f"[Translated to {target_lang}]: {text}"
 
+    await mesh.register(
+        agent=translate_text,
+        name="translator",
+        capabilities=["translation", "nlp", "language"],
+    )
     print("[OK] Registered: translator")
 
     # Method 3: Register async function
-    @mesh.agent(
-        name="sentiment-analyzer",
-        capabilities=["sentiment-analysis", "nlp"],
-    )
     async def analyze_sentiment(text: str) -> dict:
         """Analyze sentiment of text."""
         # Mock sentiment analysis
@@ -73,6 +70,11 @@ async def main():
             "confidence": 0.95,
         }
 
+    await mesh.register(
+        agent=analyze_sentiment,
+        name="sentiment-analyzer",
+        capabilities=["sentiment-analysis", "nlp"],
+    )
     print("[OK] Registered: sentiment-analyzer")
 
     # Method 4: Register with Capability objects
@@ -112,7 +114,7 @@ async def main():
         print(f"  - {agent.name}")
 
     # Discover translation agents
-    translation_agents = await mesh.discover("translate text", limit=2)
+    translation_agents = await mesh.discover("translation", limit=2)
     print(f"\nTranslation agents found: {len(translation_agents)}")
     for agent in translation_agents:
         print(f"  - {agent.name}")
@@ -124,7 +126,7 @@ async def main():
     if nlp_agents:
         summarizer_id = None
         for agent in nlp_agents:
-            if "summarization" in [cap.name for cap in agent.capabilities]:
+            if "text-summarization" in [cap.name for cap in agent.capabilities]:
                 summarizer_id = agent.id
                 break
 

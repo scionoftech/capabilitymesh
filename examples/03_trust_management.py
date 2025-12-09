@@ -7,6 +7,12 @@ This example demonstrates trust tracking and management:
 - Trust statistics and reporting
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import asyncio
 import random
 from capabilitymesh import Mesh, TrustLevel, SimpleTrustManager
@@ -23,26 +29,26 @@ async def main():
     # Register multiple agents with different reliability
     print("\n1. Registering agents...")
 
-    @mesh.agent(name="reliable-agent", capabilities=["task-a"])
     def reliable_task(input_data: str) -> str:
         """Always succeeds."""
         return f"Processed: {input_data}"
 
-    @mesh.agent(name="unstable-agent", capabilities=["task-a"])
     def unstable_task(input_data: str) -> str:
         """Sometimes fails."""
         if random.random() < 0.4:  # 40% failure rate
             raise ValueError("Random failure!")
         return f"Processed: {input_data}"
 
-    @mesh.agent(name="experimental-agent", capabilities=["task-a"])
     def experimental_task(input_data: str) -> str:
         """Frequently fails."""
         if random.random() < 0.7:  # 70% failure rate
             raise ValueError("Experimental failure!")
         return f"Processed: {input_data}"
 
-    print("✓ Registered 3 agents with different reliability")
+    await mesh.register(reliable_task, name="reliable-agent", capabilities=["task-a"])
+    await mesh.register(unstable_task, name="unstable-agent", capabilities=["task-a"])
+    await mesh.register(experimental_task, name="experimental-agent", capabilities=["task-a"])
+    print("[OK] Registered 3 agents with different reliability")
 
     # Get agent IDs
     agents = await mesh.discover("task-a", limit=10)
@@ -95,7 +101,7 @@ async def main():
     )
 
     score = await mesh.trust.get_score(unstable_id)
-    print(f"  ✓ Set unstable-agent to {score.level.name}")
+    print(f"  [OK] Set unstable-agent to {score.level.name}")
     print(f"    Manually set: {score.manually_set}")
     print(f"    Reason: {score.metadata.get('manual_reason', 'N/A')}")
 
@@ -151,16 +157,17 @@ async def main():
 
     await mesh.trust.reset_agent(experimental_id)
     score = await mesh.trust.get_score(experimental_id)
-    print(f"  ✓ Reset experimental-agent")
+    print(f"  [OK] Reset experimental-agent")
     print(f"    Level: {score.level.name}")
     print(f"    Executions: {score.total_executions}")
 
     # Demonstrate trust progression
     print("\n9. Demonstrating trust level progression...")
 
-    @mesh.agent(name="new-agent", capabilities=["task-b"])
     def new_task(input_data: str) -> str:
         return f"Result: {input_data}"
+
+    await mesh.register(new_task, name="new-agent", capabilities=["task-b"])
 
     new_agents = await mesh.discover("task-b", limit=1)
     new_id = new_agents[0].id

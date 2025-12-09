@@ -7,6 +7,12 @@ This example demonstrates semantic discovery using embeddings:
 - Search with different similarity thresholds
 """
 
+import sys
+from pathlib import Path
+
+# Add parent directory to path for development
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import asyncio
 from capabilitymesh import Mesh, Capability, KeywordEmbedder
 
@@ -91,7 +97,7 @@ async def main():
             capabilities=[capability],
         )
 
-    print(f"✓ Registered {len(agents_data)} agents")
+    print(f"[OK] Registered {len(agents_data)} agents")
 
     # Semantic search examples
     print("\n2. Semantic search examples...")
@@ -162,8 +168,8 @@ async def main():
     print("\n6. Understanding the embedder...")
 
     embedder = mesh.embedder
-    print(f"  Embedder type: {embedder.model_name}")
-    print(f"  Embedding dimension: {embedder.dimension}")
+    print(f"  Embedder type: {embedder.get_model_name()}")
+    print(f"  Embedding dimension: {embedder.get_dimension()}")
 
     # Generate embeddings for sample texts
     texts = [
@@ -174,16 +180,14 @@ async def main():
 
     print("\n  Sample embeddings:")
     for text in texts:
-        embedding = await embedder.embed(text)
+        result = await embedder.embed(text)
         # Show first 5 dimensions
         print(f"    '{text}':")
-        print(f"      First 5 dims: [{', '.join(f'{x:.4f}' for x in embedding[:5])}...]")
-        print(f"      Length: {len(embedding)}")
+        print(f"      First 5 dims: [{', '.join(f'{x:.4f}' for x in result.embedding[:5])}...]")
+        print(f"      Length: {len(result.embedding)}")
 
     # Similarity calculation
     print("\n7. Calculating semantic similarity...")
-
-    from capabilitymesh.embeddings import cosine_similarity
 
     text_pairs = [
         ("sentiment analysis", "emotion detection"),
@@ -193,9 +197,9 @@ async def main():
     ]
 
     for text1, text2 in text_pairs:
-        emb1 = await embedder.embed(text1)
-        emb2 = await embedder.embed(text2)
-        similarity = cosine_similarity(emb1, emb2)
+        result1 = await embedder.embed(text1)
+        result2 = await embedder.embed(text2)
+        similarity = embedder.cosine_similarity(result1.embedding, result2.embedding)
         print(f"\n  '{text1}' <-> '{text2}'")
         print(f"    Similarity: {similarity:.4f}")
 
