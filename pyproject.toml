@@ -1,0 +1,139 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "capabilitymesh"
+version = "1.0.0-alpha.1"
+description = "The capability mesh for multi-agent systems - universal discovery and negotiation layer"
+readme = "README_PYPI.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Sai Kumar Yava", email = "saikumar.geek@github.com"}
+]
+keywords = [
+    "agents", "multi-agent", "capability", "discovery", "negotiation",
+    "ai", "llm", "a2a", "crewai", "autogen", "langgraph", "agent-framework",
+    "capability-mesh", "agent-discovery", "agent-negotiation"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "pydantic>=2.0.0",
+    "httpx>=0.25.0",
+    "cryptography>=41.0.0",
+    "pyjwt>=2.8.0",
+    "nest-asyncio>=1.5.0",
+]
+
+[project.optional-dependencies]
+# Transport protocols
+grpc = [
+    "grpcio>=1.59.0",
+    "grpcio-tools>=1.59.0",
+]
+mqtt = [
+    "paho-mqtt>=1.6.1",
+]
+
+# Discovery enhancements
+embeddings = [
+    "sentence-transformers>=2.2.0",
+]
+openai = [
+    "openai>=1.0.0",
+]
+
+# Storage backends
+sqlite = [
+    "aiosqlite>=0.19.0",
+]
+redis = [
+    "redis[asyncio]>=5.0.0",
+]
+
+# Framework integrations
+a2a = [
+    "httpx>=0.25.0",
+]
+crewai = [
+    "crewai>=0.40.0",
+]
+langgraph = [
+    "langgraph>=0.2.0",
+    "langchain>=0.1.0",
+]
+autogen = [
+    "pyautogen>=0.2.0",
+]
+llamaindex = [
+    "llama-index>=0.10.0",
+]
+haystack = [
+    "haystack-ai>=2.0.0",
+]
+
+# Combined extras
+frameworks = [
+    "capabilitymesh[a2a,crewai,langgraph,autogen]",
+]
+all = [
+    "capabilitymesh[grpc,mqtt,embeddings,sqlite,redis,frameworks,llamaindex,haystack]",
+]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.6.0",
+    "types-pyjwt",
+]
+
+[project.urls]
+Homepage = "https://github.com/scionoftech/capabilitymesh"
+Documentation = "https://scionoftech.github.io/capabilitymesh"
+Repository = "https://github.com/scionoftech/capabilitymesh"
+Issues = "https://github.com/scionoftech/capabilitymesh/issues"
+
+# CLI will be implemented in future version
+# [project.scripts]
+# capabilitymesh = "capabilitymesh.cli.agent:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["capabilitymesh*"]
+exclude = ["tests*", "docs*", "examples*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v"
