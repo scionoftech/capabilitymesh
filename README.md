@@ -59,6 +59,8 @@ result = await mesh.execute(agents[0].id, "Hello world!", target_lang="es")
 
 **That's it!** No configuration, no setup, no complexity. Just register and discover.
 
+> **💡 Deployment Note**: This example runs in a single process. For distributed systems (microservices, multi-process), see [Discovery Architecture](DISCOVERY_ARCHITECTURE.md) for deployment patterns.
+
 ---
 
 ## 📦 Installation
@@ -238,6 +240,8 @@ mesh = Mesh(storage=RedisStorage(host="localhost", port=6379))
 | **InMemory** | No | Basic | Single | Dev, Testing |
 | **SQLite** | Yes (file) | Full-text (FTS5) | Single | Production |
 | **Redis** | Yes (remote) | Basic | Multi-instance | Cloud, Scale |
+
+> **📘 Note on Distributed Systems**: Redis enables **discovery** across multiple processes/machines, but **execution** is process-local for Python functions. For true distributed execution, use A2A adapters (HTTP-based agents). See [Discovery Architecture](DISCOVERY_ARCHITECTURE.md) for details.
 
 ---
 
@@ -479,6 +483,8 @@ reviewers = await mesh.discover("review code quality")
 
 **CapabilityMesh is the ONLY solution for universal multi-framework agent discovery.**
 
+> **📘 Architecture Notes**: See [Discovery Architecture](DISCOVERY_ARCHITECTURE.md) for details on single-process vs. distributed deployment patterns.
+
 ---
 
 ## 📊 What's Included in v1.0.0-alpha.1
@@ -519,6 +525,7 @@ reviewers = await mesh.discover("review code quality")
 
 ### Quick Links
 - **[Examples Guide](EXAMPLES_GUIDE.md)** - 6 comprehensive examples
+- **[Discovery Architecture](DISCOVERY_ARCHITECTURE.md)** - How discovery works across processes
 - **[Roadmap](ROADMAP.md)** - Future plans and vision
 - **[Contributing](CONTRIBUTING.md)** - How to contribute
 
@@ -540,16 +547,21 @@ python examples/01_basic_usage.py
 ## 🎯 Use Cases
 
 ### 1. **Multi-Framework Teams**
-Build agent teams mixing frameworks:
+Build agent teams mixing frameworks in a single process:
 ```python
+# Single process - all frameworks work together
+mesh = Mesh()
+
 team = {
     "researcher": CrewAI_Agent,    # Best for research
     "coder": AutoGen_Agent,        # Best for coding
     "orchestrator": LangGraph_Agent, # Best for workflows
-    "api": A2A_Service,            # Best for services
+    "api": A2A_Service,            # Best for services (also works distributed)
 }
 # All discoverable and coordinated via CapabilityMesh!
 ```
+
+> **💡 For distributed deployments**: Use A2A adapters for HTTP-based agents or see [Discovery Architecture](DISCOVERY_ARCHITECTURE.md) for patterns.
 
 ### 2. **Agent Marketplace**
 Build marketplaces where agents advertise capabilities:

@@ -576,6 +576,7 @@
 
                 <div class="nav-section">
                     <div class="nav-section-title">Resources</div>
+                    <a href="https://github.com/scionoftech/capabilitymesh/blob/main/DISCOVERY_ARCHITECTURE.md" target="_blank" class="nav-link">Discovery Architecture ↗</a>
                     <a href="#troubleshooting" class="nav-link">Troubleshooting</a>
                     <a href="#faq" class="nav-link">FAQ</a>
                     <a href="#changelog" class="nav-link">Changelog</a>
@@ -666,7 +667,7 @@ pip install capabilitymesh</code></pre>
                 <pre><code># SQLite persistence with full-text search
 pip install capabilitymesh[sqlite]
 
-# Redis for distributed systems
+# Redis for distributed discovery (see DISCOVERY_ARCHITECTURE.md)
 pip install capabilitymesh[redis]
 
 # Framework integrations
@@ -749,6 +750,10 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>💡 Deployment Note:</strong> This example runs in a single process with all agents in memory. For distributed systems (microservices, multi-process deployments), see <a href="https://github.com/scionoftech/capabilitymesh/blob/main/DISCOVERY_ARCHITECTURE.md" target="_blank">Discovery Architecture</a> for patterns using Redis storage and A2A adapters.
+                </div>
             </section>
 
             <!-- Key Concepts -->
@@ -1302,6 +1307,10 @@ identity = AgentIdentity(
                     <li><strong>SQLite</strong>: Production single-instance, excellent search, file-based</li>
                     <li><strong>Redis</strong>: Microservices, horizontal scaling, shared registry</li>
                 </ul>
+
+                <div class="alert alert-info">
+                    <strong>📘 Discovery Architecture:</strong> Redis enables <strong>discovery</strong> across multiple processes/machines, but <strong>execution</strong> is process-local for Python functions. For true distributed execution, use A2A adapters (HTTP-based agents). See <a href="https://github.com/scionoftech/capabilitymesh/blob/main/DISCOVERY_ARCHITECTURE.md" target="_blank">Discovery Architecture Guide</a> for deployment patterns.
+                </div>
             </section>
 
             <!-- InMemory Storage -->
@@ -1469,6 +1478,15 @@ agents = await mesh2.list_agents()  # Contains agent1!</code></pre>
 
                 <div class="alert alert-warning">
                     <strong>⚠️ Note:</strong> Requires a running Redis server. Start with: <code>redis-server</code> or use Docker: <code>docker run -d -p 6379:6379 redis</code>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>📘 Important:</strong> This example shows cross-process <strong>discovery</strong>. Instance 2 can discover agents registered by Instance 1. However, <strong>execution</strong> is process-local - Instance 2 cannot execute Instance 1's Python functions directly. For distributed execution:
+                    <ul style="margin-top: 10px;">
+                        <li>Use A2A adapters for HTTP-based agents</li>
+                        <li>Implement custom RPC/message queue coordination</li>
+                        <li>See <a href="https://github.com/scionoftech/capabilitymesh/blob/main/DISCOVERY_ARCHITECTURE.md" target="_blank">Discovery Architecture</a> for patterns</li>
+                    </ul>
                 </div>
             </section>
 
@@ -2445,6 +2463,7 @@ nest_asyncio.apply()</code></pre>
                     <li>✅ Complete README with examples</li>
                     <li>✅ 6 comprehensive examples</li>
                     <li>✅ EXAMPLES_GUIDE.md</li>
+                    <li>✅ DISCOVERY_ARCHITECTURE.md - Deployment patterns guide</li>
                     <li>✅ API documentation (this file)</li>
                     <li>✅ CONTRIBUTING.md</li>
                 </ul>
