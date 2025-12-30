@@ -1,4 +1,4 @@
-# CapabilityMesh 🕸️
+![CapabilityMesh](https://github.com/scionoftech/capabilitymesh/blob/main/capabilitymesh.png?width=200&height=150)
 
 **The first and only Python package providing universal capability discovery and negotiation across all major agent frameworks** - CrewAI, AutoGen, LangGraph, A2A, and custom agents.
 
