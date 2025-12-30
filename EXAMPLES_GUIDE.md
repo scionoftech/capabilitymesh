@@ -47,7 +47,7 @@ These examples cover the fundamental capabilities of CapabilityMesh:
 - **Description**: Learn the basics of agent registration, discovery, and execution
 - **Dependencies**: None
 - **Key Concepts**:
-  - Registering agents with `@mesh.agent()` decorator
+  - Registering agents with `@mesh.agent()` decorator (immediate registration!)
   - Discovering agents by capability
   - Executing tasks (sync and async)
   - Working with Capability objects
@@ -269,8 +269,8 @@ pip install aiosqlite
 
 ### 01_basic_usage.py
 - `Mesh()` - Initialize the mesh
-- `@mesh.agent()` - Decorator for agent registration
-- `mesh.discover()` - Find agents by capability
+- `@mesh.agent()` - Decorator for immediate agent registration
+- `mesh.discover()` - Find agents by capability (works immediately!)
 - `mesh.execute()` - Run agent tasks
 
 ### 02_storage_backends.py
@@ -317,14 +317,13 @@ After exploring these examples:
    - Check `examples/real_world_integrations.py` for production examples
 
 3. **Read the Documentation**
-   - API Reference: [docs/api_reference.md](docs/api_reference.md)
-   - Architecture Guide: [docs/architecture.md](docs/architecture.md)
-   - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+   - Technical Documentation: [docs/technical_documentation.html](docs/technical_documentation.html)
+   - Discovery Architecture: [DISCOVERY_ARCHITECTURE.md](DISCOVERY_ARCHITECTURE.md)
+   - Roadmap: [ROADMAP.md](ROADMAP.md)
 
-4. **Join the Community**
+4. **Get Support**
    - GitHub Issues: https://github.com/scionoftech/capabilitymesh/issues
    - Discussions: https://github.com/scionoftech/capabilitymesh/discussions
-   - Contributing Guide: See CONTRIBUTING.md
 
 ---
 
@@ -340,13 +339,3 @@ After exploring these examples:
 | 06 | ✅ | ✅ | ✅ | - | - | - | ✅ |
 
 ---
-
-## Additional Resources
-
-- **Week 3 Implementation**: Storage backends and trust management were added in v1.0-alpha.1
-- **Test Suite**: See `tests/unit/test_trust.py` and `tests/unit/test_sqlite_storage.py` for more usage examples
-- **API Examples**: Check integration tests in `tests/integration/` for framework-specific examples
-
----
-
-Built with ❤️ by the CapabilityMesh Team

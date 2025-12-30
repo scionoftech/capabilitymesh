@@ -13,12 +13,12 @@ Key Features:
 - Protocol-agnostic communication
 """
 
-__version__ = "1.0.0-alpha.1"
+__version__ = "1.0.0-alpha.2"
 __title__ = "CapabilityMesh"
-__description__ = "The capability mesh for multi-agent systems"
+__description__ = "Universal capability discovery and negotiation for multi-agent systems"
 __author__ = "Sai Kumar Yava"
 __author_email__ = "saikumar.geek@github.com"
-__license__ = "MIT"
+__license__ = "Apache-2.0"
 __url__ = "https://github.com/scionoftech/capabilitymesh"
 
 # Core API

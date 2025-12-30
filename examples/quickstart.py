@@ -45,11 +45,12 @@ async def main():
         """Translate text to another language."""
         return f"[{target_lang}] {text}"
 
-    # Trigger registration by calling functions
-    await summarize("This is a test")
-    await translate("Hello", "fr")
-
+    # Agents are registered IMMEDIATELY when decorated - no need to call them first
     print("[OK] Registered 2 agents using @mesh.agent decorator")
+
+    # Verify they're discoverable immediately
+    agents = await mesh.discover("summarization")
+    print(f"[OK] Found {len(agents)} summarization agent(s) - decorator works!")
     print()
 
     # ========================================

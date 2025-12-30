@@ -3,9 +3,9 @@
 **The first and only Python package providing universal capability discovery and negotiation across all major agent frameworks** - CrewAI, AutoGen, LangGraph, A2A, and custom agents.
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/version-1.0.0--alpha.1-orange.svg)]()
-[![Tests](https://img.shields.io/badge/tests-137%20passing-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Version](https://img.shields.io/badge/version-1.0.0--alpha.2-orange.svg)]()
+[![Tests](https://img.shields.io/badge/tests-139%20passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)]()
 
 ---
@@ -52,8 +52,8 @@ mesh = Mesh()  # Zero-config, works immediately!
 def translate(text: str, target_lang: str = "es") -> str:
     return f"[Translated to {target_lang}]: {text}"
 
-# Discover agents with natural language
-agents = await mesh.discover("translate text to Spanish")
+# Discover agents by capability (agent registered immediately!)
+agents = await mesh.discover("translation")
 result = await mesh.execute(agents[0].id, "Hello world!", target_lang="es")
 ```
 
@@ -106,16 +106,17 @@ async def summarize(text: str) -> str:
 def translate(text: str) -> str:
     return "Translated: " + text
 
-# Natural language discovery (semantic search)
-agents = await mesh.discover("I need to make this text shorter")
-# Returns: [summarizer] - semantic match!
-
-agents = await mesh.discover("convert to another language")
-# Returns: [translator] - semantic match!
-
-# Exact capability matching
+# Exact capability matching (works immediately)
 agents = await mesh.discover("translation")
-# Returns: [translator] - exact match
+# Returns: [translator]
+
+agents = await mesh.discover("summarization")
+# Returns: [summarizer]
+
+# Natural language discovery (enhanced with sentence-transformers/OpenAI)
+# See examples/04_semantic_search.py for advanced semantic matching
+agents = await mesh.discover("convert to another language")
+# Can match 'translator' with enhanced embeddings
 ```
 
 **No Other Package Does This!** CapabilityMesh is the ONLY solution for cross-framework capability discovery.
@@ -247,7 +248,7 @@ mesh = Mesh(storage=RedisStorage(host="localhost", port=6379))
 
 ### 5. **Semantic Search** (Smart Discovery!)
 
-Find agents using natural language, not just exact keyword matching:
+Find agents using natural language queries. The default keyword-based embedder provides basic matching, with enhanced semantic search available via sentence-transformers or OpenAI embeddings:
 
 ```python
 from capabilitymesh import Mesh
@@ -487,7 +488,7 @@ reviewers = await mesh.discover("review code quality")
 
 ---
 
-## 📊 What's Included in v1.0.0-alpha.1
+## 📊 What's Included in v1.0.0-alpha.2
 
 ### ✅ Core Features (Production-Ready)
 - **Mesh API** - Simple, intuitive interface for agent management
@@ -497,13 +498,15 @@ reviewers = await mesh.discover("review code quality")
 - **Storage backends** - InMemory, SQLite (FTS5), Redis
 - **Capability schema** - Rich metadata, versioning, constraints
 - **A2A compatibility** - Convert any agent to A2A protocol
-- **Comprehensive tests** - 137 tests, 100% passing
+- **Fixed `@mesh.agent()` decorator** - Immediate registration, no wrapper overhead, works perfectly
+- **Comprehensive tests** - 139 tests, 100% passing
 - **Complete docs** - Examples, guides, API reference
 
 ### 🎯 Tested & Working
 ```bash
-✅ 137 tests passing (0 failures)
+✅ 139 tests passing (0 failures)
 ✅ 100% test coverage of core features
+✅ @mesh.agent() decorator with immediate registration (FIXED!)
 ✅ 6 comprehensive examples
 ✅ SQLite with FTS5 full-text search
 ✅ Redis distributed storage
@@ -513,7 +516,10 @@ reviewers = await mesh.discover("review code quality")
 ```
 
 ### 🔮 Coming Soon
-- **v1.0.0-beta.1**: Enhanced embeddings (sentence-transformers, OpenAI)
+- **v1.0.0-beta.1**:
+  - Enhanced embeddings (sentence-transformers, OpenAI)
+  - Performance optimizations
+  - Additional framework integrations
 - **v1.0.0**: Stable release with production hardening
 - **v1.1.0**: P2P discovery (mDNS, Gossip, DHT)
 - **v1.2.0**: Advanced negotiation protocols
@@ -527,7 +533,6 @@ reviewers = await mesh.discover("review code quality")
 - **[Examples Guide](EXAMPLES_GUIDE.md)** - 6 comprehensive examples
 - **[Discovery Architecture](DISCOVERY_ARCHITECTURE.md)** - How discovery works across processes
 - **[Roadmap](ROADMAP.md)** - Future plans and vision
-- **[Contributing](CONTRIBUTING.md)** - How to contribute
 
 ### Example Files
 1. **`examples/01_basic_usage.py`** - Get started in 5 minutes
@@ -607,33 +612,15 @@ Choose optimal framework per agent:
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions! CapabilityMesh is just getting started and there's lots to build.
-
-**How to contribute:**
-1. Fork the repo: `github.com/scionoftech/capabilitymesh`
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Make changes and add tests
-4. Run tests: `pytest` (ensure 100% pass)
-5. Submit PR with clear description
-
-**Areas we need help:**
-- Additional framework integrations (Haystack, LlamaIndex, etc.)
-- Performance optimizations
-- Documentation improvements
-- Example use cases
-- Bug reports and fixes
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
-
----
-
 ## 📜 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+Apache License 2.0 - see [LICENSE](LICENSE) file for details.
 
-**Free for commercial and personal use!**
+**Key Benefits:**
+- ✅ Free for commercial and personal use
+- ✅ Explicit patent grant protects users and contributors
+- ✅ Clear attribution requirements
+- ✅ Enterprise-friendly legal framework
 
 ---
 
@@ -671,8 +658,8 @@ Special thanks to:
 
 ## 📈 Project Stats
 
-- **Version**: 1.0.0-alpha.1
-- **Tests**: 137 passing (100%)
+- **Version**: 1.0.0-alpha.2
+- **Tests**: 139 passing (100%)
 - **Coverage**: 100% of core features
 - **Frameworks**: 4 supported (CrewAI, AutoGen, LangGraph, A2A)
 - **Storage**: 3 backends (InMemory, SQLite, Redis)
@@ -696,10 +683,8 @@ pip install capabilitymesh
 
 <div align="center">
 
-**Making agents from any framework work together seamlessly** 🕸️
+**Making agents from any framework work together seamlessly** 
 
 *The first and only universal capability mesh for multi-agent systems*
-
-[Get Started](#-quick-start-5-lines) • [Documentation](EXAMPLES_GUIDE.md) • [Examples](examples/) • [Roadmap](ROADMAP.md)
 
 </div>

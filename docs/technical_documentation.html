@@ -518,7 +518,7 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <h1>CapabilityMesh</h1>
-                <div class="version">v1.0.0-alpha.1</div>
+                <div class="version">v1.0.0-alpha.2</div>
                 <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
             </div>
 
@@ -590,8 +590,8 @@
                 <h1>CapabilityMesh Technical Documentation</h1>
                 <p class="subtitle">Universal capability discovery and negotiation for multi-agent systems</p>
                 <div style="margin-top: 15px;">
-                    <span class="badge badge-primary">v1.0.0-alpha.1</span>
-                    <span class="badge badge-success">137 Tests Passing</span>
+                    <span class="badge badge-primary">v1.0.0-alpha.2</span>
+                    <span class="badge badge-success">139 Tests Passing</span>
                     <span class="badge badge-info">Production Ready</span>
                 </div>
             </div>
@@ -686,7 +686,7 @@ pip install capabilitymesh[all]</code></pre>
                 </ul>
 
                 <div class="alert alert-success">
-                    <strong>✅ Verified:</strong> Tested on Python 3.9, 3.10, 3.11, and 3.12. All 137 tests passing on Windows, macOS, and Linux.
+                    <strong>✅ Verified:</strong> Tested on Python 3.9, 3.10, 3.11, and 3.12. All 139 Tests passing on Windows, macOS, and Linux.
                 </div>
             </section>
 
@@ -885,11 +885,17 @@ identity = await mesh.register(
                     <div class="api-signature">
                         <code>@mesh.agent(name=None, capabilities=None, agent_type=None, metadata=None)</code>
                     </div>
-                    <p>Decorator for registering agent functions.</p>
+                    <p>Decorator for registering agent functions. <strong>The agent is registered immediately when the decorator is applied</strong> (fixed in v1.0.0-alpha.2).</p>
+                    <div class="alert alert-success">
+                        <strong>✅ Fixed in v1.0.0-alpha.2:</strong> Decorator now registers agents immediately with no wrapper overhead. Works perfectly with both sync and async functions.
+                    </div>
                     <p><strong>Example:</strong></p>
                     <pre><code>@mesh.agent(name="translator", capabilities=["translation", "nlp"])
 def translate(text: str, target_lang: str = "es") -> str:
     return f"[{target_lang}] {text}"
+
+# Agent is immediately discoverable - no need to call the function first!
+agents = await mesh.discover("translation")  # ✅ Works immediately
 
 # Async functions work too!
 @mesh.agent(name="analyzer", capabilities=["analysis"])
@@ -2382,7 +2388,7 @@ nest_asyncio.apply()</code></pre>
                 <p>A: No! CapabilityMesh works with ANY framework (CrewAI, AutoGen, LangGraph, A2A) and plain Python functions.</p>
 
                 <h4>Q: Is CapabilityMesh production-ready?</h4>
-                <p>A: v1.0.0-alpha.1 is feature-complete with 137 passing tests. It's ready for production use, but expect some refinement based on community feedback.</p>
+                <p>A: v1.0.0-alpha.2 is feature-complete with 139 passing tests. It's ready for production use, but expect some refinement based on community feedback.</p>
 
                 <h4>Q: What's the performance impact?</h4>
                 <p>A: Minimal. InMemory discovery is < 1ms. SQLite is < 10ms. Redis depends on network latency.</p>
@@ -2420,13 +2426,14 @@ nest_asyncio.apply()</code></pre>
             <section id="changelog" class="section">
                 <h2>Changelog</h2>
 
-                <h3>v1.0.0-alpha.1 (2025-12-09)</h3>
-                <p><strong>Initial Alpha Release</strong></p>
+                <h3>v1.0.0-alpha.2 (2025-12-30)</h3>
+                <p><strong>Decorator Fix Release</strong></p>
 
                 <h4>Core Features</h4>
                 <ul>
                     <li>✅ Mesh API for agent registration and discovery</li>
                     <li>✅ Multi-framework support (CrewAI, AutoGen, LangGraph, A2A)</li>
+                    <li>✅ Fixed @mesh.agent() decorator - Immediate registration, no wrapper overhead</li>
                     <li>✅ Semantic search with keyword embeddings</li>
                     <li>✅ Three storage backends (InMemory, SQLite, Redis)</li>
                     <li>✅ SimpleTrustManager with 5-level trust system</li>
@@ -2452,7 +2459,7 @@ nest_asyncio.apply()</code></pre>
 
                 <h4>Testing</h4>
                 <ul>
-                    <li>✅ 137 tests passing (100%)</li>
+                    <li>✅ 139 Tests passing (100%)</li>
                     <li>✅ Comprehensive unit tests</li>
                     <li>✅ Integration tests for all features</li>
                     <li>✅ Framework integration tests</li>
@@ -2464,6 +2471,8 @@ nest_asyncio.apply()</code></pre>
                     <li>✅ 6 comprehensive examples</li>
                     <li>✅ EXAMPLES_GUIDE.md</li>
                     <li>✅ DISCOVERY_ARCHITECTURE.md - Deployment patterns guide</li>
+                    <li>✅ DECORATOR_FIX_SUMMARY.md - Technical details of decorator improvements</li>
+                    <li>✅ CHANGELOG.md - Complete version history</li>
                     <li>✅ API documentation (this file)</li>
                     <li>✅ CONTRIBUTING.md</li>
                 </ul>
@@ -2498,7 +2507,7 @@ nest_asyncio.apply()</code></pre>
 
             <!-- Footer -->
             <div style="margin-top: 80px; padding-top: 30px; border-top: 2px solid var(--border-color); text-align: center; color: #7f8c8d;">
-                <p><strong>CapabilityMesh v1.0.0-alpha.1</strong></p>
+                <p><strong>CapabilityMesh v1.0.0-alpha.2</strong></p>
                 <p>The first and only universal capability mesh for multi-agent systems</p>
                 <p style="margin-top: 20px;">
                     <a href="https://github.com/scionoftech/capabilitymesh">GitHub</a> •

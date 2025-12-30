@@ -3,8 +3,8 @@
 **The first and only Python package for universal capability discovery across all major agent frameworks**
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://img.shields.io/badge/tests-137%20passing-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Tests](https://img.shields.io/badge/tests-139%20passing-brightgreen.svg)]()
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)]()
 
 ---
@@ -21,13 +21,13 @@ CapabilityMesh enables AI agents from **any framework** to discover and collabor
 
 ## Key Features
 
-- **Universal Discovery** - Find agents across ANY framework with semantic search
-- **Multi-Framework Support** - CrewAI, AutoGen, LangGraph, A2A, custom agents
+- **Universal Discovery** - Find agents across ANY framework (CrewAI, AutoGen, LangGraph, A2A)
+- **Immediate Registration** - Agents discoverable instantly with `@mesh.agent()` decorator
 - **Built-in Trust Management** - Automatic reliability tracking (5 trust levels)
 - **Flexible Storage** - InMemory, SQLite (FTS5), or Redis backends
-- **Semantic Search** - Natural language queries ("translate text to Spanish")
-- **Zero Configuration** - Works out of the box, 5 lines to working discovery
-- **Production Ready** - 137 tests passing, battle-tested
+- **Exact & Semantic Search** - Capability matching plus optional enhanced embeddings
+- **Zero Configuration** - Works out of the box, no setup required
+- **Production Ready** - 139 tests passing, 100% coverage, battle-tested
 
 ---
 
@@ -60,8 +60,8 @@ mesh = Mesh()  # Zero-config!
 def translate(text: str, target_lang: str = "es") -> str:
     return f"[{target_lang}] {text}"
 
-# Discover with natural language
-agents = await mesh.discover("translate text to Spanish")
+# Discover by capability (immediate registration!)
+agents = await mesh.discover("translation")
 result = await mesh.execute(agents[0].id, "Hello!", target_lang="es")
 ```
 
@@ -416,7 +416,7 @@ pip install capabilitymesh[all]
 
 ## What's Included
 
-### ✅ v1.0.0-alpha.1 (Current)
+### ✅ v1.0.0-alpha.2 (Current)
 
 - **Mesh API** - Simple interface for agent management
 - **Multi-framework support** - CrewAI, AutoGen, LangGraph, A2A, custom
@@ -425,7 +425,8 @@ pip install capabilitymesh[all]
 - **Storage backends** - InMemory, SQLite (FTS5), Redis
 - **Capability schemas** - Rich metadata, versioning, constraints
 - **A2A compatible** - Convert any agent to A2A protocol
-- **137 tests passing** - 100% coverage
+- **Fixed `@mesh.agent()` decorator** - Immediate registration, no wrapper overhead
+- **139 tests passing** - 100% coverage
 - **Complete documentation** - Examples, guides, API reference
 
 ### 🔮 Coming Soon
@@ -443,8 +444,6 @@ pip install capabilitymesh[all]
 - **Full Documentation**: [EXAMPLES_GUIDE.md](https://github.com/scionoftech/capabilitymesh/blob/main/EXAMPLES_GUIDE.md)
 - **Technical Docs**: [docs/technical_documentation.html](https://github.com/scionoftech/capabilitymesh/blob/main/docs/technical_documentation.html)
 - **Roadmap**: [ROADMAP.md](https://github.com/scionoftech/capabilitymesh/blob/main/ROADMAP.md)
-- **Changelog**: [CHANGELOG.md](https://github.com/scionoftech/capabilitymesh/blob/main/CHANGELOG.md)
-- **Contributing**: [CONTRIBUTING.md](https://github.com/scionoftech/capabilitymesh/blob/main/CONTRIBUTING.md)
 
 ### Examples
 
@@ -527,10 +526,11 @@ Choose optimal framework per agent:
 
 ## Development Status
 
-**Current Version**: v1.0.0-alpha.1
+**Current Version**: v1.0.0-alpha.2
 
 - ✅ All core features implemented
-- ✅ 137 tests passing (100% success rate)
+- ✅ `@mesh.agent()` decorator fully fixed (immediate registration!)
+- ✅ 139 tests passing (100% success rate)
 - ✅ Comprehensive documentation
 - ✅ 6 example files
 - ✅ Production-ready code quality
@@ -540,31 +540,15 @@ Choose optimal framework per agent:
 
 ---
 
-## Contributing
-
-Contributions welcome! CapabilityMesh is just getting started.
-
-**How to contribute:**
-1. Fork the repo
-2. Create a feature branch
-3. Make changes and add tests
-4. Run `pytest` (ensure 100% pass)
-5. Submit PR
-
-**Areas needing help:**
-- Additional framework integrations
-- Performance optimizations
-- Documentation improvements
-- Example use cases
-- Bug reports
-
-See [CONTRIBUTING.md](https://github.com/scionoftech/capabilitymesh/blob/main/CONTRIBUTING.md) for details.
-
----
-
 ## License
 
-MIT License - Free for commercial and personal use!
+Apache License 2.0 - Free for commercial and personal use with patent protection!
+
+**Key Benefits:**
+- ✅ Free for commercial and personal use
+- ✅ Explicit patent grant protects users and contributors
+- ✅ Clear attribution requirements
+- ✅ Enterprise-friendly legal framework
 
 See [LICENSE](https://github.com/scionoftech/capabilitymesh/blob/main/LICENSE) for details.
 
@@ -591,8 +575,8 @@ See [LICENSE](https://github.com/scionoftech/capabilitymesh/blob/main/LICENSE) f
 
 ## Project Stats
 
-- **Version**: 1.0.0-alpha.1
-- **Tests**: 137 passing (100%)
+- **Version**: 1.0.0-alpha.2
+- **Tests**: 139 passing (100%)
 - **Coverage**: 100% of core features
 - **Frameworks**: 4 supported (CrewAI, AutoGen, LangGraph, A2A)
 - **Storage**: 3 backends (InMemory, SQLite, Redis)
@@ -602,14 +586,24 @@ See [LICENSE](https://github.com/scionoftech/capabilitymesh/blob/main/LICENSE) f
 
 ---
 
+## ⭐ Show Your Support
+
+If CapabilityMesh helps your project, **star ⭐ the repo** to show your support!
+
+```bash
+# Install and try it now!
+pip install capabilitymesh
+
+# Your feedback shapes the future of multi-agent systems!
+```
+
+---
+
+
 <div align="center">
 
 **Making agents from any framework work together seamlessly**
 
 *The first and only universal capability mesh for multi-agent systems*
-
-[Get Started](https://github.com/scionoftech/capabilitymesh#quick-start) • [Documentation](https://github.com/scionoftech/capabilitymesh/blob/main/EXAMPLES_GUIDE.md) • [Examples](https://github.com/scionoftech/capabilitymesh/tree/main/examples) • [Roadmap](https://github.com/scionoftech/capabilitymesh/blob/main/ROADMAP.md)
-
-⭐ **Star us on GitHub!** ⭐
 
 </div>

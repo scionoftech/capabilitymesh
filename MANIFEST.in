@@ -1,0 +1,17 @@
+include LICENSE
+include NOTICE
+include README.md
+include README_PYPI.md
+include pyproject.toml
+
+recursive-include capabilitymesh *.py
+recursive-include capabilitymesh py.typed
+
+exclude .gitignore
+exclude .github
+recursive-exclude tests *
+recursive-exclude docs *
+recursive-exclude examples *
+recursive-exclude .pytest_cache *
+recursive-exclude __pycache__ *
+recursive-exclude *.egg-info *

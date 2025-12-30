@@ -35,21 +35,73 @@ async def test_register_callable(mesh):
 
 @pytest.mark.asyncio
 async def test_register_with_decorator(mesh):
-    """Test registering using decorator."""
+    """Test registering using decorator.
+
+    The decorator now registers immediately, not on first call.
+    """
 
     @mesh.agent(name="summarizer", capabilities=["summarization"])
     async def summarize(text: str) -> str:
         return f"Summary: {text[:10]}"
 
-    # Call the function to trigger registration
-    result = await summarize("This is a long text that needs summarization")
-
-    assert result.startswith("Summary:")
-
-    # Verify registration
+    # Agent should be registered immediately (no function call needed)
     agents = await mesh.list_agents()
     assert len(agents) == 1
     assert agents[0].name == "summarizer"
+
+    # Function should still work normally
+    result = await summarize("This is a long text that needs summarization")
+    assert result.startswith("Summary:")
+
+
+@pytest.mark.asyncio
+async def test_decorator_returns_original_function(mesh):
+    """Test that decorator returns the original function (no wrapper).
+
+    This verifies the fix in v1.0.0-alpha.2 where the decorator was changed
+    to return the original function instead of a wrapper.
+    """
+
+    def original_function(x: int) -> int:
+        """Original function docstring."""
+        return x * 2
+
+    decorated_function = mesh.agent(name="doubler", capabilities=["math"])(
+        original_function
+    )
+
+    # Verify decorator returns the exact same function object
+    assert decorated_function is original_function
+    assert decorated_function.__name__ == "original_function"
+    assert decorated_function.__doc__ == "Original function docstring."
+
+    # Agent should still be registered
+    agents = await mesh.list_agents()
+    assert len(agents) == 1
+    assert agents[0].name == "doubler"
+
+
+@pytest.mark.asyncio
+async def test_decorator_with_sync_and_async(mesh):
+    """Test decorator works correctly with both sync and async functions."""
+
+    # Sync function
+    @mesh.agent(name="sync-agent", capabilities=["sync"])
+    def sync_func(x: int) -> int:
+        return x + 1
+
+    # Async function
+    @mesh.agent(name="async-agent", capabilities=["async"])
+    async def async_func(x: int) -> int:
+        return x + 2
+
+    # Both should be registered immediately
+    agents = await mesh.list_agents()
+    assert len(agents) == 2
+
+    # Both should work correctly
+    assert sync_func(5) == 6
+    assert await async_func(5) == 7
 
 
 @pytest.mark.asyncio

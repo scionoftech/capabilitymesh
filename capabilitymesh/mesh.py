@@ -5,6 +5,7 @@ This module provides the main entry point for the CapabilityMesh API.
 
 import asyncio
 import inspect
+import threading
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Union
 from uuid import uuid4
@@ -312,11 +313,17 @@ class Mesh:
     ) -> Callable:
         """Decorator for registering agents.
 
+        The agent is registered IMMEDIATELY when the decorator is applied,
+        not when the function is first called.
+
         Example:
             ```python
             @mesh.agent(name="summarizer", capabilities=["summarization"])
             def summarize(text: str) -> str:
                 return summarize_text(text)
+
+            # Agent is already registered and discoverable
+            agents = await mesh.discover("summarization")  # Finds the agent
             ```
 
         Args:
@@ -326,56 +333,55 @@ class Mesh:
             metadata: Optional metadata
 
         Returns:
-            Decorator function
+            The original function (unmodified)
         """
 
         def decorator(func: Callable) -> Callable:
-            # Register the function synchronously
-            # Store registration info for later async registration
-            func._mesh_registration = {
-                "name": name,
-                "capabilities": capabilities,
-                "agent_type": agent_type,
-                "metadata": metadata,
-            }
-            func._mesh_instance = self
+            # Register immediately using a background thread to avoid event loop issues
+            self._register_in_background(func, name, capabilities, agent_type, metadata)
 
-            # Create a wrapper that handles both sync and async
-            if asyncio.iscoroutinefunction(func):
-
-                @wraps(func)
-                async def async_wrapper(*args, **kwargs):
-                    # Ensure registration happened
-                    if not hasattr(async_wrapper, "_mesh_registered"):
-                        await self.register(
-                            func, name, capabilities, agent_type, metadata
-                        )
-                        async_wrapper._mesh_registered = True
-                    return await func(*args, **kwargs)
-
-                return async_wrapper
-            else:
-
-                @wraps(func)
-                def sync_wrapper(*args, **kwargs):
-                    # Ensure registration happened
-                    if not hasattr(sync_wrapper, "_mesh_registered"):
-                        # Run async registration in event loop
-                        try:
-                            loop = asyncio.get_event_loop()
-                        except RuntimeError:
-                            loop = asyncio.new_event_loop()
-                            asyncio.set_event_loop(loop)
-
-                        loop.run_until_complete(
-                            self.register(func, name, capabilities, agent_type, metadata)
-                        )
-                        sync_wrapper._mesh_registered = True
-                    return func(*args, **kwargs)
-
-                return sync_wrapper
+            # Return the ORIGINAL function - no wrapper needed
+            return func
 
         return decorator
+
+    def _register_in_background(
+        self,
+        func: Callable,
+        name: Optional[str] = None,
+        capabilities: Optional[List[Union[str, Capability]]] = None,
+        agent_type: Optional[AgentType] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Register an agent in a background thread to avoid blocking.
+
+        This allows decorators to register immediately without blocking
+        module import or causing event loop conflicts.
+
+        Args:
+            func: The function to register
+            name: Optional agent name
+            capabilities: Optional capabilities
+            agent_type: Optional agent type
+            metadata: Optional metadata
+        """
+        def _run_registration():
+            # Create a new event loop in this thread
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                # Run the registration
+                loop.run_until_complete(
+                    self.register(func, name, capabilities, agent_type, metadata)
+                )
+            finally:
+                loop.close()
+
+        # Run registration in a daemon thread so it doesn't block
+        thread = threading.Thread(target=_run_registration, daemon=True)
+        thread.start()
+        # Wait for registration to complete to ensure immediate availability
+        thread.join(timeout=5.0)  # 5 second timeout to prevent hanging
 
     async def discover(
         self,
