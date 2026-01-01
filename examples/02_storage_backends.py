@@ -161,7 +161,7 @@ async def demo_redis_storage():
             print(f"[OK] API call result: {result}")
 
         # List all agents
-        all_agents = await mesh.list()
+        all_agents = await mesh.list_agents()
         print(f"[OK] Total agents in Redis: {len(all_agents)}")
 
         # Close storage
